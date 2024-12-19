@@ -1,7 +1,9 @@
 from PIL import Image
 
-import ollama
 import streamlit as st
+
+from models.ollama import extract_text as ollama_extract_text
+
 
 # Page configuration
 st.set_page_config(
@@ -38,18 +40,7 @@ with st.sidebar:
         if st.button("Extract Text 🔍", type="primary"):
             with st.spinner("Processing image..."):
                 try:
-                    response = ollama.chat(
-                        model='llama3.2-vision',
-                        messages=[{
-                            'role': 'user',
-                            'content': """Analyze the text in the provided image. Extract all readable content
-                                        and present it in a structured Markdown format that is clear, concise, 
-                                        and well-organized. Ensure proper formatting (e.g., headings, lists, or
-                                        code blocks) as necessary to represent the content effectively.""",
-                            'images': [uploaded_file.getvalue()]
-                        }]
-                    )
-                    st.session_state['ocr_result'] = response.message.content
+                    st.session_state['ocr_result'] = ollama_extract_text(uploaded_file)
                 except Exception as e:
                     st.error(f"Error processing image: {str(e)}")
 
