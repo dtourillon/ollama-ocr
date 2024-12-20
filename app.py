@@ -3,6 +3,7 @@ from PIL import Image
 import streamlit as st
 
 from models.ollama import extract_text as ollama_extract_text
+from models.openai import extract_text as openai_extract_text
 
 
 # Page configuration
@@ -24,11 +25,15 @@ with col2:
             del st.session_state['ocr_result']
         st.rerun()
 
-st.markdown('<p style="margin-top: -20px;">Extract structured text from images using Llama 3.2 Vision!</p>', unsafe_allow_html=True)
+st.markdown('<p style="margin-top: -20px;">Extract structured text from images!</p>', unsafe_allow_html=True)
 st.markdown("---")
 
 # Move upload controls to sidebar
 with st.sidebar:
+    selected_llm_povider = st.selectbox(
+        'Which LLM provider should we use?',
+        ["ollama", "openai"],
+    )
     st.header("Upload Image")
     uploaded_file = st.file_uploader("Choose an image...", type=['png', 'jpg', 'jpeg'])
     
@@ -38,9 +43,12 @@ with st.sidebar:
         st.image(image, caption="Uploaded Image")
         
         if st.button("Extract Text 🔍", type="primary"):
-            with st.spinner("Processing image..."):
+            with st.spinner(f"Processing image with {selected_llm_povider}..."):
                 try:
-                    st.session_state['ocr_result'] = ollama_extract_text(uploaded_file)
+                    if selected_llm_povider == "ollama":
+                        st.session_state['ocr_result'] = ollama_extract_text(uploaded_file)
+                    elif selected_llm_povider == "openai":
+                        st.session_state['ocr_result'] = openai_extract_text(uploaded_file)
                 except Exception as e:
                     st.error(f"Error processing image: {str(e)}")
 
